@@ -58,7 +58,7 @@ def create_clusters(k, data, image_id, x_dim):
     plt.xlim(0, x_dim)
     plt.legend(fontsize=14)
     plt.grid()
-    plt.savefig(f"Output/clustering_plots/{image_id.split('.')[0]}_cluster.jpg", dpi=300, bbox_inches="tight")
+    plt.savefig(f"Output/clustering_plots/{image_id}_cluster.jpg", dpi=300, bbox_inches="tight")
     plt.figure().clear(True)
 
     return sil_score, inertia, clustering_time

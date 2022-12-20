@@ -74,13 +74,13 @@ def run(weights, source, save_dir, imgsz, conf_thresh, iou_thresh, device_keywor
         pred = non_max_suppression(pred, conf_thresh, iou_thresh, None, False, max_det=1000)
         dt[2] += time_sync() - t3
 
-        image_id = path.split("\\")[-1].split(".csv")[0]
+        image_id = path.split(source)[-1].split(".jpg")[0].strip("\\").strip("/")
 
         # Get the depth matrix of the input image using the depth_model in main
         depth_matrix, depth_save_path, depth_time = get_depth_matrix(path, image_id, depth_model)
 
         # Dataframe to store the features for the K-Means Clustering Part
-        objects_df = pd.DataFrame(columns=["object", "leftCoord", "topCoord", "distance"])
+        objects_df = pd.DataFrame(columns=["object", "leftCoord", "distance"])
 
         # Process predictions
         det = pred[0]
@@ -121,7 +121,6 @@ def run(weights, source, save_dir, imgsz, conf_thresh, iou_thresh, device_keywor
 
                 cluster_feat_1, depth_map = get_depth_value(depth_matrix, bb_h, bb_w, depth_map, c1)
                 cluster_feat_2 = (c1[0] + c2[0])/2  # x-coordinate of center pixel of the predicted bounding box
-                cluster_feat_3 = (c1[1] + c2[1])/2  # y-coordinate of center pixel of the predicted bounding box
 
                 person_vehicles = ["soldier", "civilian", "tank", "truck", "cannon", "rocket_missile",
                                     "watercraft", "airplane", "ambulance", "motorcycle", "car"]
@@ -129,19 +128,19 @@ def run(weights, source, save_dir, imgsz, conf_thresh, iou_thresh, device_keywor
                 # if label.split(" ")[0] in person_vehicles:
                 #     objects_df = objects_df.append({"object":label, "leftCoord": cluster_feat_2, "distance": cluster_feat_1}, ignore_index=True)
                 objects_df = objects_df.append({"object":label.split(" ")[0], "leftCoord": cluster_feat_2,
-                                                "topCoord":cluster_feat_3, "distance": cluster_feat_1}, ignore_index=True)
+                                                "distance": cluster_feat_1}, ignore_index=True)
 
             if not os.path.exists("Output/info_csv"):
                 os.mkdir("Output/info_csv")
 
-            csv_save_path = f"Output/info_csv/{image_id.split('.')[0]}.csv"
+            csv_save_path = f"Output/info_csv/{image_id}.csv"
             objects_df.to_csv(csv_save_path, index=False)
 
             depth_obj_save_path = "Output/depth_obj"
             if not os.path.exists(depth_obj_save_path):
                 os.mkdir(depth_obj_save_path)
 
-            cv2.imwrite(f"{depth_obj_save_path}/{image_id.split('.')[0]}.png", depth_map)
+            cv2.imwrite(f"{depth_obj_save_path}/{image_id}.jpg", depth_map)
 
             # Cluster Objects
             n_obj = len(objects_df["object"])
@@ -152,7 +151,7 @@ def run(weights, source, save_dir, imgsz, conf_thresh, iou_thresh, device_keywor
 
             silhouette_score, inertia, clustering_time = create_clusters(k, objects_df, image_id, depth_matrix.shape[1])
 
-            obj_data_dict = {"image_id":image_id.split('.')[0], "objects_count":n_obj, "od_time": t3-t2, "depth_time": depth_time, 
+            obj_data_dict = {"image_id":image_id, "objects_count":n_obj, "od_time": t3-t2, "depth_time": depth_time, 
                              "clustering_time": clustering_time, "silhouette_score": silhouette_score, "clustering_inertia": inertia}
 
             time_taken = time_taken.append(obj_data_dict, ignore_index=True)
@@ -161,15 +160,15 @@ def run(weights, source, save_dir, imgsz, conf_thresh, iou_thresh, device_keywor
             if not os.path.exists("Output/detections"):
                 os.mkdir("Output/detections")
 
-            cv2.imwrite(f"Output/detections/{image_id.split('.')[0]}.jpg", im0)
+            cv2.imwrite(f"Output/detections/{image_id}.jpg", im0)
 
         # Print time (inference-only)
         LOGGER.info(f'{s}Done. ({t3 - t2:.3f}s)')
     time_taken.to_csv(f"Output/stats.csv", index=False)
 
 if __name__ == "__main__":
-    weights = "weights/best_yolov5x.pt" # Path to the weight file (*.pt)
-    source = "test" # Folder containing test images
+    weights = "weights/battlefield_object_detector.pt" # Path to the weight file (*.pt)
+    source = "test_images" # Folder containing test images
     imgsz = (416, 416)  # Image Size
     conf_thresh = 0.35   # Confidence Threshold
     iou_thresh = 0.45   # Threshold of IoU
