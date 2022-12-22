@@ -1,0 +1,1 @@
+Please download the battlefield object detector YOLOv5x model from the provided link and paste the battlefield_object_detector.pt file in this folder.

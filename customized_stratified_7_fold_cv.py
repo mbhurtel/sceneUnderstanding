@@ -1,5 +1,5 @@
 '''
-Before running this code, make sure you have the overall merged dataset i.e., dataset_before_split
+Before running this code, make sure you have the overall merged dataset i.e., COBA_unsplitted
 '''
 ##################################################################################################################################
 
@@ -8,7 +8,7 @@ from sklearn.model_selection import StratifiedKFold
 import os
 import shutil
 
-BASE_DIR = "coba_dataset"
+BASE_DIR = "COBA_unsplitted"
 labels = os.listdir(f"{BASE_DIR}/labels")
 
 print(f"Total number of image-label pairs: {len(labels)}")

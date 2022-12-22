@@ -1,7 +1,9 @@
+# Importing the necessary packages
 import os
 import pandas as pd
 import numpy as np
-from pathlib import Path
+import glob
+
 import torch
 from models.common import DetectMultiBackend
 from utils.dataloaders import LoadImages
@@ -9,51 +11,39 @@ from utils.general import (LOGGER, cv2, non_max_suppression, scale_coords)
 from utils.plots import Annotator, colors
 from utils.torch_utils import time_sync
 
-from calculate_depth import get_depth_matrix
+from calculate_depth import get_depth_matrix, get_depth_value
 from kmeans_clustering import create_clusters
-
-# def get_second_min(all_rgn_depths):
-#     temp_list = [(i, rgn) for i, rgn in enumerate(all_rgn_depths)]
-#     sorted_list = sorted(temp_list, key=lambda x: x[1])
-#     second_min = sorted_list[1]
-#     return second_min
-
-def get_depth_value(depth_matrix, h, w, depth_map, c1):
-    # region proposals
-    # coords_yyxx = [(c1[1] + int(0.25 * h), c1[1] + int(0.30 * h), c1[0] + int(0.48 * w), c1[0] + int(0.53 * w)),
-    #                 (c1[1] + int(0.48 * h), c1[1] + int(0.53 * h), c1[0] + int(0.25 * w), c1[0] + int(0.30 * w)),
-    #                 (c1[1] + int(0.75 * h), c1[1] + int(0.8 * h), c1[0] + int(0.48 * w), c1[0] + int(0.53 * w)),
-    #                 (c1[1] + int(0.48 * h), c1[1] + int(0.53 * h), c1[0] + int(0.75 * w), c1[0] + int(0.8 * w)),
-    #                 (c1[1] + int(0.48 * h), c1[1] + int(0.53 * h), c1[0] +int(0.48 * w), c1[0] + int(0.53 * w))]
-
-    coords_yyxx = [(c1[1] + int(0.48 * h), c1[1] + int(0.53 * h), c1[0] +int(0.48 * w), c1[0] + int(0.53 * w))]
-
-    # all_rgn_depths = [depth_matrix[y1: y2, x1: x2].mean() for y1, y2, x1, x2 in coords_yyxx]
-    abs_center_depth = [depth_matrix[y1: y2, x1: x2].mean() for y1, y2, x1, x2 in coords_yyxx]
-
-    # second_min_idx, second_min_val = get_second_min(all_rgn_depths)
-    for i, coords in enumerate(coords_yyxx):
-        # color = (0, 0, 255)
-        # if i == second_min_idx:
-        #     color = (0, 255, 0)
-        cv2.rectangle(depth_map, (coords[2], coords[0]), (coords[3], coords[1]), color=(0,255,0), thickness=-1, lineType=cv2.LINE_AA)
-
-    # return second_min_val, depth_map
-    return abs_center_depth[0], depth_map
+import plots_generator as pg
 
 @torch.no_grad()
 def run(weights, source, save_dir, imgsz, conf_thresh, iou_thresh, device_keyword, depth_model, k=3):
+
+    # Creating the directories to store the output
+    if not os.path.exists("Output/detections"):
+        os.mkdir(f"{save_dir}/detections")
+
+    if not os.path.exists(f"{save_dir}/info_csv"):
+        os.mkdir(f"{save_dir}/info_csv")
+
+    if not os.path.exists(f"{save_dir}/depth_obj"):
+        os.mkdir(f"{save_dir}/depth_obj")
+
+    if not os.path.exists(f"{save_dir}/depth_maps"):
+        os.mkdir(f"{save_dir}/depth_maps")
+
+    if not os.path.exists(f"{save_dir}/clustering_plots"):
+        os.mkdir(f"{save_dir}/clustering_plots")
 
     # Load model
     device = torch.device(device_keyword)
     model = DetectMultiBackend(weights, device=device, dnn=False, data=None, fp16=False)
     stride, names, pt = model.stride, model.names, model.pt
 
-    # Dataloader
+    # Loading the test data
     dataset = LoadImages(source, img_size=imgsz, stride=stride, auto=pt)
-    time_taken = pd.DataFrame(columns=["image_id", "objects_count", "od_time", "depth_time", "clustering_time", "silhouette_score"])
+    stats = pd.DataFrame(columns=["image_id", "objects_count", "od_time", "depth_time", "clustering_time", "silhouette_score"])
 
-    # Run inference
+    # Run the model for inference
     dt = [0.0, 0.0, 0.0]
     for path, im, im0s, vid_cap, s in dataset:
         t1 = time_sync()
@@ -65,15 +55,16 @@ def run(weights, source, save_dir, imgsz, conf_thresh, iou_thresh, device_keywor
         t2 = time_sync()
         dt[0] += t2 - t1
 
-        # Inference
+        # Battlefield Object Detector Inference
         pred = model(im, augment=False, visualize=False)
         t3 = time_sync()
         dt[1] += t3 - t2
 
-        # NMS
+        # Non-max suppression
         pred = non_max_suppression(pred, conf_thresh, iou_thresh, None, False, max_det=1000)
         dt[2] += time_sync() - t3
 
+        # Extract the image_id
         image_id = path.split(source)[-1].split(".jpg")[0].strip("\\").strip("/")
 
         # Get the depth matrix of the input image using the depth_model in main
@@ -85,10 +76,12 @@ def run(weights, source, save_dir, imgsz, conf_thresh, iou_thresh, device_keywor
         # Process predictions
         det = pred[0]
         p, im0, frame = path, im0s.copy(), getattr(dataset, 'frame', 0)
-
         s += '%gx%g ' % im.shape[2:]
-        annotator = Annotator(im0, line_width=18, example=str(names))
+
+        # Annotator to annotate the images with bounding boxes and labels
+        annotator = Annotator(im0, example=str(names))
         depth_map = cv2.imread(depth_save_path)
+
         if len(det):
             # Rescale boxes from img_size to im0 size
             det[:, :4] = scale_coords(im.shape[2:], det[:, :4], im0.shape).round()
@@ -98,7 +91,7 @@ def run(weights, source, save_dir, imgsz, conf_thresh, iou_thresh, device_keywor
                 n = (det[:, -1] == c).sum()  # detections per class
                 s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
 
-            # Write results
+            # Here we loop to annotate and save the results
             for *xyxy, conf, cls in reversed(det):
                 c = int(cls)  # integer class
                 label = f'{names[c]} {conf:.2f}'
@@ -106,81 +99,85 @@ def run(weights, source, save_dir, imgsz, conf_thresh, iou_thresh, device_keywor
                 c1, c2 = (int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3]))
 
                 # Annotator object to annotate the depth map
-                depth_annotator = Annotator(depth_map, line_width=18, example=str(names))
+                depth_annotator = Annotator(depth_map, example=str(names))
                 depth_annotator.box_label(xyxy, label, color=colors(c, True), show_conf=False)
 
+                # Bounding box height and width
                 bb_h, bb_w = c2[1] - c1[1], c2[0] - c1[0]
-                xx = c1[0] + int(0.45 * bb_w), c1[0] + int(0.55 * bb_w)
-                yy = c1[1] + int(0.45 * bb_h), c1[1] + int(0.55 * bb_h)
 
-                # Drawing the center depth region where we take the mean
-                # cv2.rectangle(depth_map, (xx[0], yy[0]), (xx[1], yy[1]), (0, 255, 0), thickness=-1, lineType=cv2.LINE_AA)
-
-                image_depth_crop = depth_matrix[yy[0]: yy[1], xx[0]: xx[1]]
-                # cluster_feat_1 = np.mean(image_depth_crop)
-
+                # Here we get the mean depth value and the corresponding depth map annotated with center depth region
                 cluster_feat_1, depth_map = get_depth_value(depth_matrix, bb_h, bb_w, depth_map, c1)
-                cluster_feat_2 = (c1[0] + c2[0])/2  # x-coordinate of center pixel of the predicted bounding box
 
-                person_vehicles = ["soldier", "civilian", "tank", "truck", "cannon", "rocket_missile",
-                                    "watercraft", "airplane", "ambulance", "motorcycle", "car"]
+                # x-coordinate of center pixel of the predicted bounding box as second feature for clustering
+                cluster_feat_2 = (c1[0] + c2[0])/2
 
-                # if label.split(" ")[0] in person_vehicles:
-                #     objects_df = objects_df.append({"object":label, "leftCoord": cluster_feat_2, "distance": cluster_feat_1}, ignore_index=True)
+                # Store the object names and their spatial distances in the dataframe
                 objects_df = objects_df.append({"object":label.split(" ")[0], "leftCoord": cluster_feat_2,
                                                 "distance": cluster_feat_1}, ignore_index=True)
 
-            if not os.path.exists("Output/info_csv"):
-                os.mkdir("Output/info_csv")
+            objects_df.to_csv(f"{save_dir}/info_csv/{image_id}.csv", index=False)
 
-            csv_save_path = f"Output/info_csv/{image_id}.csv"
-            objects_df.to_csv(csv_save_path, index=False)
+            if not os.path.exists(f"{save_dir}/depth_obj"):
+                os.mkdir(f"{save_dir}/depth_obj")
 
-            depth_obj_save_path = "Output/depth_obj"
-            if not os.path.exists(depth_obj_save_path):
-                os.mkdir(depth_obj_save_path)
-
-            cv2.imwrite(f"{depth_obj_save_path}/{image_id}.jpg", depth_map)
+            cv2.imwrite(f"{save_dir}/depth_obj/{image_id}.jpg", depth_map)
 
             # Cluster Objects
             n_obj = len(objects_df["object"])
 
-            # k = 1 if n_obj <=3 else (2 if (n_obj > 3 and n_obj <=6) else 3)
-            # k = 1 if n_obj == 1 else (2 if (n_obj == 2 and n_obj <=6) else 3)
+            # We assign the value of k = 3, but in case we the ODM detects less number of objects, then we assign k to be less than 3
             k = n_obj if n_obj < 3 else (2 if n_obj == 3 else 3)
 
+            # Create the clusters and get the results
             silhouette_score, inertia, clustering_time = create_clusters(k, objects_df, image_id, depth_matrix.shape[1])
 
+            # Data to store in stats.csv
             obj_data_dict = {"image_id":image_id, "objects_count":n_obj, "od_time": t3-t2, "depth_time": depth_time, 
                              "clustering_time": clustering_time, "silhouette_score": silhouette_score, "clustering_inertia": inertia}
 
-            time_taken = time_taken.append(obj_data_dict, ignore_index=True)
+            stats = stats.append(obj_data_dict, ignore_index=True)
             im0 = annotator.result()
-
-            if not os.path.exists("Output/detections"):
-                os.mkdir("Output/detections")
 
             cv2.imwrite(f"Output/detections/{image_id}.jpg", im0)
 
         # Print time (inference-only)
         LOGGER.info(f'{s}Done. ({t3 - t2:.3f}s)')
-    time_taken.to_csv(f"Output/stats.csv", index=False)
+    stats.to_csv(f"Output/stats.csv", index=False)
 
 if __name__ == "__main__":
     weights = "weights/battlefield_object_detector.pt" # Path to the weight file (*.pt)
     source = "test_images" # Folder containing test images
     imgsz = (416, 416)  # Image Size
     conf_thresh = 0.35   # Confidence Threshold
-    iou_thresh = 0.45   # Threshold of IoU
-    device_keyword = 'cpu'   # Device cpu or cuda:<n>
+    iou_thresh = 0.45   # IoU Threshold
+    device_keyword = 'cpu'   # We use CPU for the processing of all ODM, DEM and KMC modules
     k = 3 # Number of clusters
 
+    # Create the output directory
     if not os.path.exists("Output"):
         os.mkdir("Output")
-    save_dir = "Output" # Save directory
+    save_dir = "Output"
 
-    # depth_model = "mono_640x192"
-    # depth_model = "mono+stereo_640x192"
-    depth_model = "stereo_640x192"
+    # Depth model location
+    depth_model = "stereo_model"
 
+    # This function runs the ODM + DEM + KMC modules and generates results
     run(weights, source, save_dir, imgsz, conf_thresh, iou_thresh, device_keyword, depth_model)
+
+    if not os.path.exists("Output/experimental_plots"):
+        os.mkdir("Output/experimental_plots")
+
+    # List the csv files inside info_csv generated from the ODM + DEM + KMC module (by running detect.py)
+    cluster_features_csvs = glob.glob("Output/info_csv/*.csv")
+
+    # Here we use the inertia for each test images from stats.csv to generate the inertia plot
+    pg.generate_inertia_plot(cluster_features_csvs)
+
+    # Reading the stats file generated from the ODM + DEM + KMC module (by running detect.py)
+    data_stats = pd.read_csv("Output/stats.csv")
+
+    # Here we plot the silhouette scores for each test image from stats.csv to plot the silhouette scores
+    pg.plot_silhouette_scores(data_stats)
+
+    # Here we generate the time_taken plot for all test images
+    pg.plot_time_taken(data_stats)

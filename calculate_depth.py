@@ -15,14 +15,26 @@ from architectures.depth_decoder import *
 
 from utils.torch_utils import time_sync
 
-from depth_utils import download_model_if_doesnt_exist
-
 def get_depth_matrix(image_path, image_id, model_name):
+    '''
+    This function generates the depth that is converted from floating point matrix to the absolute value matrix for each pixel.
+    args:
+    image_path - path of the image that is currently detected by the ODM module
+    image_id - ID of the image required to save the output image
+    model_name - The depth model name (in our case stereo_model) to generate the depth map
 
+    returns:
+    disp_resized_np_real - Depth matrix with absolute distance
+    save_path - 
+    depth_time
+    
+    '''
+
+    # Specifying the encoder and decoder path
     encoder_path = os.path.join("depth_models", model_name, "encoder.pth")
     depth_decoder_path = os.path.join("depth_models", model_name, "depth.pth")
 
-    # LOADING PRETRAINED MODEL
+    # Loading the encoder and decoder network
     encoder = ResnetEncoder(18, False)
     depth_decoder = DepthDecoder(num_ch_enc=encoder.num_ch_enc, scales=range(4))
 
@@ -59,26 +71,26 @@ def get_depth_matrix(image_path, image_id, model_name):
         (original_height, original_width), mode="bilinear", align_corners=False)
 
     disp_resized_np = disp_resized.squeeze().cpu().numpy()
-    vmax = np.percentile(disp_resized_np, 100)
     disp_resized_np_real = 5.4 / ((9.99*disp_resized_np) + 0.01)
-    # plt.imshow(disp_resized_np, cmap='magma', vmax=vmax)
 
-    if not os.path.exists("Output/depth_maps"):
-        os.mkdir("Output/depth_maps")
-
-    # plt.savefig(f"Output/Depth Maps/{image_id.split('.')[0]}.png", dpi=300, cmap="magma", bbox_inches = "tight")
     save_path = f"Output/depth_maps/{image_id}.png"
     plt.imsave(save_path, disp_resized_np, cmap="magma")
     plt.figure().clear(True)
 
     return disp_resized_np_real, save_path, depth_time
 
-if __name__ == "__main__":
-    image = "test.jpg"
 
-    # model_name = "mono_640x192"
-    # model_name = "mono+stereo_640x192"
-    depth_model = "stereo_640x192"
+def get_depth_value(depth_matrix, h, w, depth_map, c1):
 
-    disp_resized_np_real = get_depth_matrix(image, depth_model)
-    print(disp_resized_np_real)
+    # Center coordinate with dimension (0.53h − 0.48h) × (0.53w − 0.48w) in the selected window below
+    coords_yyxx = [(c1[1] + int(0.48 * h), c1[1] + int(0.53 * h), c1[0] +int(0.48 * w), c1[0] + int(0.53 * w))]
+
+    # Calculate the mean of depth values within the selected window
+    abs_center_depth = [depth_matrix[y1: y2, x1: x2].mean() for y1, y2, x1, x2 in coords_yyxx]
+
+    # Drawing the green center box in the depth map where we extracted the mean depth value
+    for i, coords in enumerate(coords_yyxx):
+        cv2.rectangle(depth_map, (coords[2], coords[0]), (coords[3], coords[1]), color=(0,255,0), thickness=-1, lineType=cv2.LINE_AA)
+
+    # return the mean depth value and the associated depth_map
+    return abs_center_depth[0], depth_map
