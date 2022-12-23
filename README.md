@@ -33,7 +33,7 @@ COBA_7fold_split_sets
 ```
 
 #### Step 2: Train the YOLOv5s model on our 7 folds of dataset
-We train YOLOv5s using our COBA dataset with <b>batch_size = 64</b>, <b>epochs=50</b>, <b>image_resolution=416 x 416</b>. Please run the following code independently from commandline (staying in the working directory):
+We train YOLOv5s using our COBA dataset with <b>batch_size = 64</b>, <b>epochs=50</b>, and <b>image_resolution=416 x 416</b>. Please run the following code independently from commandline (staying in the working directory):
 ```
 python train.py --img 416 --batch 64 --epochs 50 --data data/fold_0_data.yaml --cfg ./models/battlefield_yolov5s.yaml --weights '' --name S7KCV_training_results/results_fold_0 --cache
 python train.py --img 416 --batch 64 --epochs 50 --data data/fold_1_data.yaml --cfg ./models/battlefield_yolov5s.yaml --weights '' --name S7KCV_training_results/results_fold_1 --cache
@@ -44,7 +44,7 @@ python train.py --img 416 --batch 64 --epochs 50 --data data/fold_5_data.yaml --
 python train.py --img 416 --batch 64 --epochs 50 --data data/fold_6_data.yaml --cfg ./models/battlefield_yolov5s.yaml --weights '' --name S7KCV_training_results/results_fold_6 --cache
 ```
 
-After completion of 7 independent training, the training results are stored in the a new <b>runs/train/S7KCV_training_results</b> directory.
+After completion of 7 independent training, the training results are stored in the a new <b>runs/train/S7KCV_training_results</b> directory. These results are used to generate the comparative plots.
 
 ##### Step 3: Generate comparative plots for 7 folds of data
 Here we generate the comparative bar chart and table to find out which fold of data is optimal. To generate the results, you should simply run [generate_s7kcv_results.py]() script.
