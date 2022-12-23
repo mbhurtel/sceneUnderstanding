@@ -13,13 +13,13 @@ from utils.torch_utils import time_sync
 
 from calculate_depth import get_depth_matrix, get_depth_value
 from kmeans_clustering import create_clusters
-import plots_generator as pg
+import experimental_plots_generator as epg
 
 @torch.no_grad()
 def run(weights, source, save_dir, imgsz, conf_thresh, iou_thresh, device_keyword, depth_model, k=3):
 
     # Creating the directories to store the output
-    if not os.path.exists("Output/detections"):
+    if not os.path.exists(f"{save_dir}/detections"):
         os.mkdir(f"{save_dir}/detections")
 
     if not os.path.exists(f"{save_dir}/info_csv"):
@@ -68,7 +68,7 @@ def run(weights, source, save_dir, imgsz, conf_thresh, iou_thresh, device_keywor
         image_id = path.split(source)[-1].split(".jpg")[0].strip("\\").strip("/")
 
         # Get the depth matrix of the input image using the depth_model in main
-        depth_matrix, depth_save_path, depth_time = get_depth_matrix(path, image_id, depth_model)
+        depth_matrix, depth_save_path, depth_time = get_depth_matrix(path, image_id, depth_model, save_dir)
 
         # Dataframe to store the features for the K-Means Clustering Part
         objects_df = pd.DataFrame(columns=["object", "leftCoord", "distance"])
@@ -129,7 +129,7 @@ def run(weights, source, save_dir, imgsz, conf_thresh, iou_thresh, device_keywor
             k = n_obj if n_obj < 3 else (2 if n_obj == 3 else 3)
 
             # Create the clusters and get the results
-            silhouette_score, inertia, clustering_time = create_clusters(k, objects_df, image_id, depth_matrix.shape[1])
+            silhouette_score, inertia, clustering_time = create_clusters(k, objects_df, image_id, depth_matrix.shape[1], save_dir)
 
             # Data to store in stats.csv
             obj_data_dict = {"image_id":image_id, "objects_count":n_obj, "od_time": t3-t2, "depth_time": depth_time, 
@@ -138,11 +138,12 @@ def run(weights, source, save_dir, imgsz, conf_thresh, iou_thresh, device_keywor
             stats = stats.append(obj_data_dict, ignore_index=True)
             im0 = annotator.result()
 
-            cv2.imwrite(f"Output/detections/{image_id}.jpg", im0)
+            cv2.imwrite(f"{save_dir}/detections/{image_id}.jpg", im0)
 
         # Print time (inference-only)
         LOGGER.info(f'{s}Done. ({t3 - t2:.3f}s)')
-    stats.to_csv(f"Output/stats.csv", index=False)
+    stats.to_csv(f"{save_dir}/stats.csv", index=False)
+    print(f"All inference results are stored in {save_dir}")
 
 if __name__ == "__main__":
     weights = "weights/battlefield_object_detector.pt" # Path to the weight file (*.pt)
@@ -153,31 +154,36 @@ if __name__ == "__main__":
     device_keyword = 'cpu'   # We use CPU for the processing of all ODM, DEM and KMC modules
     k = 3 # Number of clusters
 
+    if not os.path.exists("all_results"):
+        os.mkdir("all_results")
+
     # Create the output directory
-    if not os.path.exists("Output"):
-        os.mkdir("Output")
-    save_dir = "Output"
+    if not os.path.exists("all_results/inference_output"):
+        os.mkdir("all_results/inference_output")
+    save_dir_inf = "all_results/inference_output"
 
     # Depth model location
     depth_model = "stereo_model"
 
     # This function runs the ODM + DEM + KMC modules and generates results
-    run(weights, source, save_dir, imgsz, conf_thresh, iou_thresh, device_keyword, depth_model)
+    run(weights, source, save_dir_inf, imgsz, conf_thresh, iou_thresh, device_keyword, depth_model)
 
-    if not os.path.exists("Output/experimental_plots"):
-        os.mkdir("Output/experimental_plots")
+    if not os.path.exists("all_results/experimental_plots"):
+        os.mkdir("all_results/experimental_plots")
+
+    save_dir_expt = "all_results/experimental_plots"
 
     # List the csv files inside info_csv generated from the ODM + DEM + KMC module (by running detect.py)
-    cluster_features_csvs = glob.glob("Output/info_csv/*.csv")
+    cluster_features_csvs = glob.glob(f"{save_dir_inf}/info_csv/*.csv")
 
     # Here we use the inertia for each test images from stats.csv to generate the inertia plot
-    pg.generate_inertia_plot(cluster_features_csvs)
+    epg.generate_inertia_plot(cluster_features_csvs, save_dir_expt)
 
     # Reading the stats file generated from the ODM + DEM + KMC module (by running detect.py)
-    data_stats = pd.read_csv("Output/stats.csv")
+    data_stats = pd.read_csv(f"{save_dir_inf}/stats.csv")
 
     # Here we plot the silhouette scores for each test image from stats.csv to plot the silhouette scores
-    pg.plot_silhouette_scores(data_stats)
+    epg.plot_silhouette_scores(data_stats, save_dir_expt)
 
     # Here we generate the time_taken plot for all test images
-    pg.plot_time_taken(data_stats)
+    epg.plot_time_taken(data_stats, save_dir_expt)

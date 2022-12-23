@@ -1,59 +1,111 @@
 ## <div align="center"> Battlefield Scene Understanding </div>
 
 ### Install the dependencies
-To install all the dependencies and packages, please refer to the following code:
+To install all the dependencies and packages, please execute [requirements.txt](https://github.com/9characters/sceneUnderstanding/blob/main/requirements.txt):
 
 ```
 pip install -r requirements.txt
 ```
 
-
-
 ### Customized stratified 7-fold cross validation
+##### Step 1: Split the COBA dataset 7 folds of training and validation sets
 If you want to create generate the 7-Folds of data, then follow the steps:
-1. Download our COBA_unsplitted dataset from [here](https://github.com/9characters) and place it into the working directory.
-2. Run [customized_stratified_7_fold_cv.py](https://github.com/4characters/research3/blob/main/requirements.txt) script:
+1. Download our COBA dataset from <a href=#>here</a> and place it into the working directory.
+2. Run [customized_stratified_7_fold_cv.py](https://github.com/9characters/sceneUnderstanding/blob/main/customized_stratified_7_fold_cv.py) script:
 ```
 python customized_stratified_7_fold_cv.py
 ```
 
-After this step, you will get the following 7 sets of training and validation data.
+After this step, you will get the following 7 sets of training and validation data in a new folder named <b>COBA_7fold_split_sets</b> organized as follows:
+
 ```
-valid_fold_0
-valid_fold_1
-...
-valid_fold_6
+COBA_7fold_split_sets
+├── fold_0
+│     ├── train
+│     ├── valid
+├── fold_1
+│     ├── train
+│     ├── valid
+│     ...
+├── fold_6
+      ├── train
+      ├── valid
 ```
 
-##### Generate the plots
+#### Step 2: Train the YOLOv5s model on our 7 folds of dataset
+We train YOLOv5s using our COBA dataset with <b>batch_size = 64</b>, <b>epochs=50</b>, <b>image_resolution=416 x 416</b>. Please run the following code independently from commandline (staying in the working directory):
+```
+python train.py --img 416 --batch 64 --epochs 50 --data data/fold_0_data.yaml --cfg ./models/battlefield_yolov5s.yaml --weights '' --name S7KCV_training_results/results_fold_0 --cache
+python train.py --img 416 --batch 64 --epochs 50 --data data/fold_1_data.yaml --cfg ./models/battlefield_yolov5s.yaml --weights '' --name S7KCV_training_results/results_fold_1 --cache
+python train.py --img 416 --batch 64 --epochs 50 --data data/fold_2_data.yaml --cfg ./models/battlefield_yolov5s.yaml --weights '' --name S7KCV_training_results/results_fold_2 --cache
+python train.py --img 416 --batch 64 --epochs 50 --data data/fold_3_data.yaml --cfg ./models/battlefield_yolov5s.yaml --weights '' --name S7KCV_training_results/results_fold_3 --cache
+python train.py --img 416 --batch 64 --epochs 50 --data data/fold_4_data.yaml --cfg ./models/battlefield_yolov5s.yaml --weights '' --name S7KCV_training_results/results_fold_4 --cache
+python train.py --img 416 --batch 64 --epochs 50 --data data/fold_5_data.yaml --cfg ./models/battlefield_yolov5s.yaml --weights '' --name S7KCV_training_results/results_fold_5 --cache
+python train.py --img 416 --batch 64 --epochs 50 --data data/fold_6_data.yaml --cfg ./models/battlefield_yolov5s.yaml --weights '' --name S7KCV_training_results/results_fold_6 --cache
+```
 
-Notice that a new folder COBA will be created using the valid_fold_5 training and validation sets which has provided the best results. This COBA dataset will be used to train our Battlefield Obeject Detector (YOLOv5 model).
+After completion of 7 independent training, the training results are stored in the a new <b>runs/train/S7KCV_training_results</b> directory.
+
+##### Step 3: Generate comparative plots for 7 folds of data
+Here we generate the comparative bar chart and table to find out which fold of data is optimal. To generate the results, you should simply run [generate_s7kcv_results.py]() script.
+```
+python generate_s7kcv_results.py
+```
+
+The results are stored in <b>all_results/S7KCV_results</b> directory. After results are generated, the structure of all_results will look like this:
+
+```
+all_results
+├── S7FCV_results
+      ├── folds_AP_data.csv
+      ├── s7fcv_plot.jpg
+```
 
 ### ODM Training using COBA
-You need to train 5 different YOLOv5 models independently with by running the following lines of code one by one.
+#### Step 1: Traing YOLOv5 models using our COBA dataset
+You need to train 5 different YOLOv5 models independently by running the following lines of code one by one.
 ```
-python train.py --img 416 --batch 128 --epochs 200 --data data.yaml --cfg ./models/battlefield_yolov5n.yaml --weights '' --name results_yolov5n --cache
-python train.py --img 416 --batch 64 --epochs 200 --data data.yaml --cfg ./models/battlefield_yolov5s.yaml --weights '' --name results_yolov5s --cache
-python train.py --img 416 --batch 40 --epochs 200 --data data.yaml --cfg ./models/battlefield_yolov5m.yaml --weights '' --name results_yolov5m --cache
-python train.py --img 416 --batch 32 --epochs 200 --data data.yaml --cfg ./models/battlefield_yolov5l.yaml --weights '' --name results_yolov5l --cache
-python train.py --img 416 --batch 16 --epochs 200 --data data.yaml --cfg ./models/battlefield_yolov5x.yaml --weights '' --name results_yolov5x --cache
+python train.py --img 416 --batch 128 --epochs 200 --data data_COBA/data.yaml --cfg ./models/battlefield_yolov5n.yaml --weights '' --name results_YOLOv5n --cache
+python train.py --img 416 --batch 64 --epochs 200 --data data_COBA/data.yaml --cfg ./models/battlefield_yolov5s.yaml --weights '' --name results_YOLOv5s --cache
+python train.py --img 416 --batch 40 --epochs 200 --data data_COBA/data.yaml --cfg ./models/battlefield_yolov5m.yaml --weights '' --name results_YOLOv5m --cache
+python train.py --img 416 --batch 32 --epochs 200 --data data_COBA/data.yaml --cfg ./models/battlefield_yolov5l.yaml --weights '' --name results_YOLOv5l --cache
+python train.py --img 416 --batch 16 --epochs 200 --data data_COBA/data.yaml --cfg ./models/battlefield_yolov5x.yaml --weights '' --name results_YOLOv5x --cache
 ```
 
-Notice that in each independent training, the batch size is different i.e., larger the model, smaller the batch size. The YOLOv5 architectures are defined the [models](https://github.com/4characters/research3/tree/main/models) directory.
+In each independent training, the batch size is different i.e., larger the model, smaller the batch size. The battlefield object detection architectures are defined in the [models](https://github.com/9characters/sceneUnderstanding/tree/main/models) directory.
 
-Please make sure that the output generated after training reside in the working directory. So that we can generate the comparative training plots.
+Notice that a new directory <b>runs</b> is created after the completion of the training, that stores the results for each of the independent training execution.
 
-The training results are stored in runs...
-##### Generate training plots
+#### Step 2: Generate training results
+Now we will use the results for all 5 YOLOv5 models i.e., YOLOv5n, YOLOv5s, YOLOv5m, YOLOv5l and YOLov5x and generate the training plots. To generate the training plots, you can simply run [training_plots_generator.py]().
+```
+python training_plots_generator.py
+```
+The results are stored in <b>all_results/training_results</b> directory. And the structure of the <b>all_results</b> directory will look like this:
+
+```
+all_results
+├── S7FCV_results
+│     ├── folds_AP_data.csv
+│     ├── s7fcv_plot.jpg
+├── training_results
+      ├── results.jpg
+      ├── PR_curve.png
+      ├── results_table.csv
+```
+
 
 ### Experiment using ODM, DEM and KMC together
 Now we use our trained models to make the inference on 100 new test images. Please follow the following steps:
-1. Download our Battlefield Object Detector trained weights from [here](https://github.com/9characters)
-2. Download the pretrained monodepth2 stereo model from [here](https://github.com/9characters) and store in [depth_models](https://github.com/4characters/research3/depth_models)
-3. Download the test_images from here and place the folder into the working directory
-3. Make sure you organize the models and test_images in the working directory as the following structure:
+1. Download our Battlefield Object Detector trained weights (battlefield_object_detector.pt) from <a href=#>here</a> and store it in [Weights](https://github.com/9characters/research3/tree/main/weights) directory.
+2. Download the test_images from <a href=#>here</a> and place the folder into the working directory
+
+Note that the pretrained monodepth2 model is already uploaded in the <b>depth_models/stereo</b> directory.
+
+Make sure you organize the models and test_images in the working directory as the following structure:
 ```
 sceneUnderstanding
+│...
 ├── weights
 │   ├── battlefield_object_detector.pt
 ├── depth_models
@@ -69,16 +121,37 @@ sceneUnderstanding
 ├── models  
 │...
 ```
-4. Run [detect.py](https://github.com/4characters/research3/blob/main/detect.py) on the 100 test data
+4. Run [detect.py](https://github.com/9characters/sceneUnderstanding/blob/main/detect.py) to run the inference on 100 test_images
 ```
 python detect.py
 ```
 
-After running the above script, you will notice a new [Output]() folder that contains the output results for all 100 images. The [experimental_results]() contains the [inertia_plot](), [silhouette_scores_plot]() and [time_taken_plot]().
+After running the above script, the results from the inference are stored in <b>all_results/inference_output</b> and the experimental results are stored in <b>all_results/experimental_results</b>. The structure of <b>all_output</b> directory will look like this:
 
+```
+all_results
+├── S7FCV_results
+│     ├── folds_AP_data.csv
+│     ├── s7fcv_plot.jpg
+├── training_results
+│     ├── results.jpg
+│     ├── PR_curve.png
+│     ├── results_table.csv
+├── inference_output
+│     ├── detections
+│     ├── depth_maps
+│     ├── depth_obj
+│     ├── clustering_plots
+│     ├── info_csv
+│     ├── stats.csv
+├── experimental_results
+      ├── inertia_plot.jpg
+      ├── silhouette_scores.jpg
+      ├── time_taken.jpg
+```
 #### <div align="left"> Credits </div>
 - Most part of the codes for Battlefield Object Detector are depicted from:
 [YOLOv5 Official Repository](https://github.com/ultralytics/yolov5)
 
-- The depth estimation code is extracted and modified from: [Monodepth2](https://github.com/nianticlabs/monodepth2)
+- The depth estimation model is extracted from: [Monodepth2](https://github.com/nianticlabs/monodepth2)
 

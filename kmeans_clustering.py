@@ -9,7 +9,7 @@ import numpy as np
 import warnings
 warnings.filterwarnings("ignore")
 
-def create_clusters(k, data, image_id, x_dim):
+def create_clusters(k, data, image_id, x_dim, save_dir):
     '''
     This function creates the clusters for the objects with distances measures
 
@@ -77,7 +77,7 @@ def create_clusters(k, data, image_id, x_dim):
     plt.ylim(0)
     plt.legend(fontsize=14)
     plt.grid()
-    plt.savefig(f"Output/clustering_plots/{image_id}_cluster.jpg", dpi=300, bbox_inches="tight")
+    plt.savefig(f"{save_dir}/clustering_plots/{image_id}_cluster.jpg", dpi=300, bbox_inches="tight")
     plt.figure().clear(True)
 
     return sil_score, inertia, clustering_time

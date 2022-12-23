@@ -1,5 +1,5 @@
 '''
-Before running this code, make sure you have the overall merged dataset i.e., COBA_unsplitted
+Before running this code, make sure you have our COBA dataset in the working directory
 '''
 ##################################################################################################################################
 
@@ -8,10 +8,30 @@ from sklearn.model_selection import StratifiedKFold
 import os
 import shutil
 
+print("Generating the COBA_unsplitted dataset to create the 7 fold splits...")
+
+if not os.path.exists("COBA_unsplitted"):
+    os.mkdir("COBA_unsplitted")
+    os.mkdir("COBA_unsplitted/images")
+    os.mkdir("COBA_unsplitted/labels")
+
+for folder in ["train", "valid"]:
+    for name in ["images", "labels"]:
+        src = f"COBA/{folder}/{name}"
+        all_files = os.listdir(src)
+        for file in all_files:
+            src_path = os.path.join(src, file)
+            dest_path = f"COBA_unsplitted/{name}/{file}"
+            shutil.copy(src_path, dest_path)
+
+print("Success! COBA_unsplitted dataset created!\n")
+
 BASE_DIR = "COBA_unsplitted"
+images = os.listdir(f"{BASE_DIR}/images")
 labels = os.listdir(f"{BASE_DIR}/labels")
 
 print(f"Total number of image-label pairs: {len(labels)}")
+print(f"Total background images (with no annotations): {len(images) - len(labels)}\n")
 
 # All classes dictionary
 classes = {"aircraft":0, "ambulance": 1, "watercraft":2, "barrel": 3, "briefcase": 4, "cannon": 5, "car":6, 
@@ -25,7 +45,9 @@ classes_opp = dict(list(zip(*(classes.values(), classes.keys()))))
 columns = ["image_id"] + list(classes.keys())
 
 ##################################################################################################################################
-# Now We count the number of annotations for each of the objects present in the image
+# We count the number of annotations for each object present in the image
+
+print("Counting the number of annotations for each object present in the images...")
 
 # Dataframe to store the count
 s7f_data = pd.DataFrame(columns=columns)
@@ -33,7 +55,6 @@ s7f_data = pd.DataFrame(columns=columns)
 # Here we loop over the labels because images also contain the background images which is not necessary during the 
 # dataset split evaluation
 for i, label_file in enumerate(labels):
-    print(f"Working on file {i}: {label_file}")
     
     # Storing the image id in image_id column
     per_image_annot = {"image_id": label_file.split(".")[0]}
@@ -55,7 +76,8 @@ for i, label_file in enumerate(labels):
     
     # Storing the total count of objects present in the image (Note: objects not presented will return NaN)
     s7f_data = s7f_data.append(per_image_annot, ignore_index = True)
-    print(f"Execution {i} Completed : {label_file}\n")
+
+print("Success! Counting completed!\n")
 
 ##################################################################################################################################
 # Filling the NaN with 0 since those objects are not present in that image_id
@@ -122,11 +144,14 @@ stratified_folds_df = stratified_folds_df.append(folds_sum, ignore_index=True).s
 ## Here we create select one fold and make it as validation set and merge all other folds as training set.
 ## We repeat the process for all 7 folds to create 7 sets of training and validation data.
 
+if not os.path.exists("COBA_7fold_split_sets"):
+    os.mkdir("COBA_7fold_split_sets")
+    
 for i in range(7):
     
     # Creating the necessary directories
-    print(f"Working on Fold {i}...")
-    root_folder = f"valid_fold_{i}"
+    print(f"Creating fold {i} dataset...")
+    root_folder = f"COBA_7fold_split_sets/fold_{i}"
     if not os.path.exists(root_folder):
         os.mkdir(root_folder)
         os.mkdir(f"{root_folder}/valid")
@@ -148,15 +173,29 @@ for i in range(7):
         # Here, we copy the image from source to the designated destination
         img_src = f"{BASE_DIR}/images/{row[1]['image_id']}.jpg"
         img_dest = f"{root_folder}/{dest_path}/images/{row[1]['image_id']}.jpg"
-        shutil.copyfile(img_src, img_dest)
+        shutil.copy(img_src, img_dest)
         
         # Here, we copy the labels from source to the designated destination
-        yolo_label_src = f"{BASE_DIR}/labels/{row[1]['image_id']}.txt"
-        yolo_label_dest = f"{root_folder}/{dest_path}/labels/{row[1]['image_id']}.txt"
-        shutil.copyfile(yolo_label_src, yolo_label_dest)
+        label_src = f"{BASE_DIR}/labels/{row[1]['image_id']}.txt"
+        label_dest = f"{root_folder}/{dest_path}/labels/{row[1]['image_id']}.txt"
+        shutil.copy(label_src, label_dest)
 
-    print(f"Fold {i} Completed!!!\n")
+    print(f"Fold {i} dataset created!!!\n")
 
-print("Successfully splitted the dataset into 7 folds!")
+print("Successfully splitted the dataset into 7 folds!\n")
 
+##################################################################################################################################
+# Delete the COBA_unsplitted folder
+print("Now we do not need COBA_unsplitted folder, so we delete it!")
+print("Deleting COBA_unsplitted...")
+shutil.rmtree("COBA_unsplitted")
+print("COBA_unsplitted deleted!")
+
+print("\nThe 7fold of training and validation sets are stored in COBA_7fold_split_sets/fold_0")
+print("\t\t\t\t\t\t\t\t\t      fold_1")
+print("\t\t\t\t\t\t\t\t\t      fold_2")
+print("\t\t\t\t\t\t\t\t\t      fold_3")
+print("\t\t\t\t\t\t\t\t\t      fold_4")
+print("\t\t\t\t\t\t\t\t\t      fold_5")
+print("\t\t\t\t\t\t\t\t\t      fold_6")
 ##################################################################################################################################

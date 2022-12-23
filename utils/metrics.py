@@ -9,6 +9,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import torch
 
 
@@ -332,6 +333,16 @@ def plot_pr_curve(px, py, ap, save_dir=Path('pr_curve.png'), names=()):
     plt.legend(bbox_to_anchor=(1.04, 1), loc="upper left")
     fig.savefig(save_dir, dpi=250)
     plt.close()
+
+    columns = ["all", "aircraft", "ambulance", "watercraft", "barrel", "briefcase", "cannon", "car", "dagger", "dog",
+               "handgun", "helmet", "horse", "missile_rocket", "motorcycle", "civilian", "rifle", "tank", "truck",
+               "soldier"]
+    ap_df = pd.DataFrame(index=columns)
+    ap_50 = list(np.array(ap)[:, 0])
+    ap_all_classes = [np.mean(ap_50)]
+    ap_merged = ap_all_classes + ap_50
+    ap_df["AP_0.5"] = np.round(ap_merged, 3)
+    ap_df.to_csv("all_classes_AP.csv", index=True)
 
 
 def plot_mc_curve(px, py, save_dir=Path('mc_curve.png'), names=(), xlabel='Confidence', ylabel='Metric'):

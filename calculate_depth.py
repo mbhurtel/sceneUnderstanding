@@ -15,9 +15,10 @@ from architectures.depth_decoder import *
 
 from utils.torch_utils import time_sync
 
-def get_depth_matrix(image_path, image_id, model_name):
+def get_depth_matrix(image_path, image_id, model_name, save_dir):
     '''
     This function generates the depth that is converted from floating point matrix to the absolute value matrix for each pixel.
+
     args:
     image_path - path of the image that is currently detected by the ODM module
     image_id - ID of the image required to save the output image
@@ -73,7 +74,7 @@ def get_depth_matrix(image_path, image_id, model_name):
     disp_resized_np = disp_resized.squeeze().cpu().numpy()
     disp_resized_np_real = 5.4 / ((9.99*disp_resized_np) + 0.01)
 
-    save_path = f"Output/depth_maps/{image_id}.png"
+    save_path = f"{save_dir}/depth_maps/{image_id}.png"
     plt.imsave(save_path, disp_resized_np, cmap="magma")
     plt.figure().clear(True)
 

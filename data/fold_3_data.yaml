@@ -1,0 +1,5 @@
+train: COBA_7fold_split_sets/fold_3/train/images
+val: COBA_7fold_split_sets/fold_3/valid/images
+
+nc: 19
+names: ["aircraft", "ambulance", "watercraft", "barrel", "briefcase", "cannon", "car", "dagger", "dog", "handgun", "helmet", "horse", "missile_rocket", "motorcycle", "civilian", "rifle", "tank", "truck", "soldier"]
