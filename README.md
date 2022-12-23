@@ -1,6 +1,13 @@
 ## <div align="center"> Battlefield Scene Understanding </div>
 
 ### Install the dependencies
+#### Step 1: Create the virtual environment using <b>conda</b> or <b>virtualenv</b>. We used <b>python3.7</b> throughout the project.
+```
+conda create --name sceneUnderstanding python=3.7
+conda activate sceneUnderstanding
+```
+
+#### Step 2: Install
 To install all the dependencies and packages, please execute [requirements.txt](https://github.com/9characters/sceneUnderstanding/blob/main/requirements.txt):
 
 ```
@@ -9,9 +16,8 @@ pip install -r requirements.txt
 
 ### Customized stratified 7-fold cross validation
 ##### Step 1: Split the COBA dataset 7 folds of training and validation sets
-If you want to create generate the 7-Folds of data, then follow the steps:
-1. Download our COBA dataset from <a href=#>here</a> and place it into the working directory.
-2. Run [customized_stratified_7_fold_cv.py](https://github.com/9characters/sceneUnderstanding/blob/main/customized_stratified_7_fold_cv.py) script:
+- Download our COBA dataset from <a href=#>here</a> and place it into the working directory.
+- Run [customized_stratified_7_fold_cv.py](https://github.com/9characters/sceneUnderstanding/blob/main/customized_stratified_7_fold_cv.py) script:
 ```
 python customized_stratified_7_fold_cv.py
 ```
@@ -47,7 +53,7 @@ python train.py --img 416 --batch 64 --epochs 50 --data data/fold_6_data.yaml --
 After completion of 7 independent training, the training results are stored in the a new <b>runs/train/S7KCV_training_results</b> directory. These results are used to generate the comparative plots.
 
 ##### Step 3: Generate comparative plots for 7 folds of data
-Here we generate the comparative bar chart and table to find out which fold of data is optimal. To generate the results, you should simply run [generate_s7kcv_results.py]() script.
+Here we generate the comparative bar chart and table to find out which fold of data is optimal. To generate the results, you should simply run [generate_s7kcv_results.py](https://github.com/9characters/sceneUnderstanding/blob/main/generate_s7kcv_results.py) script.
 ```
 python generate_s7kcv_results.py
 ```
@@ -96,9 +102,10 @@ all_results
 
 
 ### Experiment using ODM, DEM and KMC together
-Now we use our trained models to make the inference on 100 new test images. Please follow the following steps:
-1. Download our Battlefield Object Detector trained weights (battlefield_object_detector.pt) from <a href=#>here</a> and store it in [Weights](https://github.com/9characters/research3/tree/main/weights) directory.
-2. Download the test_images from <a href=#>here</a> and place the folder into the working directory
+#### Step 1: Download necessary models and data
+
+- Download our Battlefield Object Detector trained weights (battlefield_object_detector.pt) from <a href=#>here</a> and store it in [Weights](https://github.com/9characters/research3/tree/main/weights) directory.
+- Download the test_images from <a href=#>here</a> and place the folder into the working directory
 
 Note that the pretrained monodepth2 model is already uploaded in the <b>depth_models/stereo</b> directory.
 
@@ -121,12 +128,12 @@ sceneUnderstanding
 ├── models  
 │...
 ```
-Finally, run [detect.py](https://github.com/9characters/sceneUnderstanding/blob/main/detect.py) to run the inference on 100 test_images
+Now simply run [detect.py](https://github.com/9characters/sceneUnderstanding/blob/main/detect.py) to run the inference using (ODM + DEM + KMC) on 100 test_images.
 ```
 python detect.py
 ```
 
-After running the above script, the results from the inference are stored in <b>all_results/inference_output</b> and the experimental results are stored in <b>all_results/experimental_results</b>. The structure of <b>all_output</b> directory will look like this:
+After running the above script, the results from the inference are stored in <b>all_results/inference_output</b> and the experimental results are stored in <b>all_results/experimental_results</b>. The structure of <b>all_output</b> directory after this step will look like this:
 
 ```
 all_results
