@@ -121,7 +121,7 @@ sceneUnderstanding
 ├── models  
 │...
 ```
-4. Run [detect.py](https://github.com/9characters/sceneUnderstanding/blob/main/detect.py) to run the inference on 100 test_images
+Finally, run [detect.py](https://github.com/9characters/sceneUnderstanding/blob/main/detect.py) to run the inference on 100 test_images
 ```
 python detect.py
 ```
