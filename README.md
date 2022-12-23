@@ -71,11 +71,11 @@ all_results
 #### Step 1: Traing YOLOv5 models using our COBA dataset
 You need to train 5 different YOLOv5 models independently by running the following lines of code one by one.
 ```
-python train.py --img 416 --batch 128 --epochs 200 --data data_COBA/data.yaml --cfg ./models/battlefield_yolov5n.yaml --weights '' --name results_YOLOv5n --cache
-python train.py --img 416 --batch 64 --epochs 200 --data data_COBA/data.yaml --cfg ./models/battlefield_yolov5s.yaml --weights '' --name results_YOLOv5s --cache
-python train.py --img 416 --batch 40 --epochs 200 --data data_COBA/data.yaml --cfg ./models/battlefield_yolov5m.yaml --weights '' --name results_YOLOv5m --cache
-python train.py --img 416 --batch 32 --epochs 200 --data data_COBA/data.yaml --cfg ./models/battlefield_yolov5l.yaml --weights '' --name results_YOLOv5l --cache
-python train.py --img 416 --batch 16 --epochs 200 --data data_COBA/data.yaml --cfg ./models/battlefield_yolov5x.yaml --weights '' --name results_YOLOv5x --cache
+python train.py --img 416 --batch 128 --epochs 200 --data data/data_COBA.yaml --cfg ./models/battlefield_yolov5n.yaml --weights '' --name results_YOLOv5n --cache
+python train.py --img 416 --batch 64 --epochs 200 --data data/data_COBA.yaml --cfg ./models/battlefield_yolov5s.yaml --weights '' --name results_YOLOv5s --cache
+python train.py --img 416 --batch 40 --epochs 200 --data data/data_COBA.yaml --cfg ./models/battlefield_yolov5m.yaml --weights '' --name results_YOLOv5m --cache
+python train.py --img 416 --batch 32 --epochs 200 --data data/data_COBA.yaml --cfg ./models/battlefield_yolov5l.yaml --weights '' --name results_YOLOv5l --cache
+python train.py --img 416 --batch 16 --epochs 200 --data data/data_COBA.yaml --cfg ./models/battlefield_yolov5x.yaml --weights '' --name results_YOLOv5x --cache
 ```
 
 In each independent training, the batch size is different i.e., larger the model, smaller the batch size. The battlefield object detection architectures are defined in the [models](https://github.com/9characters/sceneUnderstanding/tree/main/models) directory.

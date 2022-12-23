@@ -20,6 +20,8 @@
 *.data
 *.json
 *.cfg
+*.zip
+*.rar
 !setup.cfg
 !cfg/yolov3*.cfg
 
