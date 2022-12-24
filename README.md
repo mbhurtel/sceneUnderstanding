@@ -123,7 +123,7 @@ all_results
 - Download our Battlefield Object Detector trained weights (battlefield_object_detector.pt) from <a href=#>here</a> and store it in [Weights](https://github.com/9characters/research3/tree/main/weights) directory.
 - Download the test_images from <a href=#>here</a> and place the folder into the working directory
 
-Note that the pretrained monodepth2 model is already uploaded in the <b>depth_models/stereo</b> directory.
+Note that the pretrained monodepth2 model and associated architectures is already uploaded in the <b>depth_models/stereo</b> and <b>architectures</b> directories respectively.
 
 Make sure you organize the models and test_images in the working directory as the following structure:
 ```
@@ -140,8 +140,10 @@ sceneUnderstanding
 │   │   ├── test (2).jpg
 │   │   ├── ...
 │   │   ├── test (100).jpg
-├── architectures   
-├── models  
+├── architectures
+│   ├── depth_decoder.py
+│   ├── resnet_encoder.py
+├── models
 │...
 ```
 Now simply run [detect.py](https://github.com/9characters/sceneUnderstanding/blob/main/detect.py) to run the inference using (ODM + DEM + KMC) on 100 test_images.
