@@ -1,7 +1,13 @@
 ## <div align="center"> Battlefield Scene Understanding </div>
+This is the official GitHub repository for the paper <b>"Efficient and Non-Redundant Objects Allocation Using Object-Aware and Depth-Aware Clustering for Battlefield Scenario"</b>. We have tried our best to keep the <b>random_state (or seed)</b> where required, for reproducibility of the results. The code is organized in four broad sections:
+- Environment and dependencies setup
+- Customized stratified 7-fold cross validation
+- ODM Training using COBA
+- Inference and Experiment using ODM + DEM + KMC
 
-### Install the dependencies
-#### Step 1: Create the virtual environment using <b>conda</b> or <b>virtualenv</b>. We used <b>python3.7</b> throughout the project.
+### Environment and dependencies setup
+#### Step 1: Virtual Environment
+Create the virtual environment using <b>conda</b> or <b>virtualenv</b>. We used <b>python3.7</b> throughout the project.
 ```
 conda create --name sceneUnderstanding python=3.7
 conda activate sceneUnderstanding
@@ -22,7 +28,7 @@ pip install -r requirements.txt
 python customized_stratified_7_fold_cv.py
 ```
 
-After this step, you will get the following 7 sets of training and validation data in a new folder named <b>COBA_7fold_split_sets</b> organized as follows:
+After this step, you will get the following 7 sets of training and validation data in a new directory named <b>COBA_7fold_split_sets</b> organized as follows:
 
 ```
 COBA_7fold_split_sets
@@ -68,8 +74,8 @@ all_results
 ```
 
 ### ODM Training using COBA
-#### Step 1: Traing YOLOv5 models using our COBA dataset
-You need to train 5 different YOLOv5 models independently by running the following lines of code one by one.
+#### Step 1: Training YOLOv5 models using our COBA dataset
+We need to train 5 different YOLOv5 models independently by running the following lines of code one by one.
 ```
 python train.py --img 416 --batch 128 --epochs 200 --data data/data_COBA.yaml --cfg ./models/battlefield_yolov5n.yaml --weights '' --name results_YOLOv5n --cache
 python train.py --img 416 --batch 64 --epochs 200 --data data/data_COBA.yaml --cfg ./models/battlefield_yolov5s.yaml --weights '' --name results_YOLOv5s --cache
@@ -81,6 +87,16 @@ python train.py --img 416 --batch 16 --epochs 200 --data data/data_COBA.yaml --c
 In each independent training, the batch size is different i.e., larger the model, smaller the batch size. The battlefield object detection architectures are defined in the [models](https://github.com/9characters/sceneUnderstanding/tree/main/models) directory.
 
 Notice that a new directory <b>runs</b> is created after the completion of the training, that stores the results for each of the independent training execution.
+
+Please note that the training requires a lot of time. Following table shows the time taken for us to train each model on <b>Google Colab's P100</b> GPU trained for <b>200 epochs</b>:
+
+| Models | Training Time (h)|
+|  :-:   |        :-:       |
+|YOLOv5n |       1.385      |
+|YOLOv5s |       2.349      |
+|YOLOv5m |       4.252      |
+|YOLOv5l |       7.167      |
+|YOLOv5x |       13.556     |
 
 #### Step 2: Generate training results
 Now we will use the results for all 5 YOLOv5 models i.e., YOLOv5n, YOLOv5s, YOLOv5m, YOLOv5l and YOLov5x and generate the training plots. To generate the training plots, you can simply run [training_plots_generator.py]().
@@ -101,7 +117,7 @@ all_results
 ```
 
 
-### Experiment using ODM, DEM and KMC together
+### Inference and Experiment using ODM + DEM + KMC
 #### Step 1: Download necessary models and data
 
 - Download our Battlefield Object Detector trained weights (battlefield_object_detector.pt) from <a href=#>here</a> and store it in [Weights](https://github.com/9characters/research3/tree/main/weights) directory.
