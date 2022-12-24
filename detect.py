@@ -41,7 +41,7 @@ def run(weights, source, save_dir, imgsz, conf_thresh, iou_thresh, device_keywor
 
     # Loading the test data
     dataset = LoadImages(source, img_size=imgsz, stride=stride, auto=pt)
-    stats = pd.DataFrame(columns=["image_id", "objects_count", "od_time", "depth_time", "clustering_time", "silhouette_score"])
+    stats = pd.DataFrame(columns=["image_id", "objects_count", "od_time", "depth_time", "clustering_time", "total_time", "silhouette_score", "clustering_inertia"])
 
     # Run the model for inference
     dt = [0.0, 0.0, 0.0]
@@ -132,8 +132,9 @@ def run(weights, source, save_dir, imgsz, conf_thresh, iou_thresh, device_keywor
             silhouette_score, inertia, clustering_time = create_clusters(k, objects_df, image_id, depth_matrix.shape[1], save_dir)
 
             # Data to store in stats.csv
-            obj_data_dict = {"image_id":image_id, "objects_count":n_obj, "od_time": t3-t2, "depth_time": depth_time, 
-                             "clustering_time": clustering_time, "silhouette_score": silhouette_score, "clustering_inertia": inertia}
+            od_time = t3-t2
+            obj_data_dict = {"image_id":image_id, "objects_count":n_obj, "od_time": od_time, "depth_time": depth_time, 
+                             "clustering_time": clustering_time, "total_time": od_time+depth_time+clustering_time, "silhouette_score": silhouette_score, "clustering_inertia": inertia}
 
             stats = stats.append(obj_data_dict, ignore_index=True)
             im0 = annotator.result()
@@ -141,7 +142,7 @@ def run(weights, source, save_dir, imgsz, conf_thresh, iou_thresh, device_keywor
             cv2.imwrite(f"{save_dir}/detections/{image_id}.jpg", im0)
 
         # Print time (inference-only)
-        LOGGER.info(f'{s}Done. ({t3 - t2:.3f}s)')
+        LOGGER.info(f'{s}Done. ({od_time:.3f}s)')
     stats.to_csv(f"{save_dir}/stats.csv", index=False)
     print(f"All inference results are stored in {save_dir}")
 
@@ -186,4 +187,4 @@ if __name__ == "__main__":
     epg.plot_silhouette_scores(data_stats, save_dir_expt)
 
     # Here we generate the time_taken plot for all test images
-    epg.plot_time_taken(data_stats, save_dir_expt)
+    epg.generate_time_data(data_stats, save_dir_expt)

@@ -77,11 +77,11 @@ def plot_silhouette_scores(data_stats, save_dir):
     print("Plotting silhouette scores...")
     
     # Specifying the marker for the plot
-    marker = markers.MarkerStyle(marker='o', fillstyle='none')
+    # marker = markers.MarkerStyle(marker='o', fillstyle='none')
     image_num = range(0, len(data_stats))
     
     # Plotting the chart for 100 images with their respective silhouette scores
-    plt.plot(image_num, data_stats["silhouette_score"], c = "maroon", marker = marker)
+    plt.plot(image_num, data_stats["silhouette_score"], c = "maroon", marker = 'o')
     plt.xlabel("Images")
     plt.ylabel("Silhouette Score")
     
@@ -97,7 +97,7 @@ def plot_silhouette_scores(data_stats, save_dir):
     print(f"Average silhouette score is: {avg_sil}\n")
 
 
-def plot_time_taken(data_stats, save_dir):
+def generate_time_data(data_stats, save_dir):
     '''
     This function plots the time-taken by each module (DEM, ODM, KMC)
 
@@ -105,7 +105,7 @@ def plot_time_taken(data_stats, save_dir):
     data_stats - Data recorded by running the ODM + DEM + KMC modules
     '''
 
-    print("Plotting time-taken plot...")
+    print("Gnerating time-taken plot and table...")
 
     # Plotting ODM, DEM, KMC times
     x = range(0, len(data_stats))
@@ -128,4 +128,12 @@ def plot_time_taken(data_stats, save_dir):
     plt.savefig(f"{save_dir}/time_taken.jpg", dpi=300, bbox_inches="tight")
     plt.figure().clear(True)
 
-    print(f"Time-taken plot successfully generated! Saved to {save_dir}/time_taken.png\n")
+    # Here we generate the table of minimum, maximum and average time taken by all the modules
+    time_table = pd.DataFrame(index=["Object Detection", "Depth Estimation", "K-Means Clustering", "Total"])
+    model_times = [[data_stats[model_time].min(), data_stats[model_time].max(), data_stats[model_time].mean()] for model_time in ["od_time", "depth_time", "clustering_time", "total_time"]]
+    time_table["Min Time (s)"] = [model_time[0] for model_time in model_times]
+    time_table["Max Time (s)"] = [model_time[1] for model_time in model_times]
+    time_table["Avg Time (s)"] = [model_time[2] for model_time in model_times]
+    time_table.to_csv(f"{save_dir}/time_taken_table.csv", index=True)
+
+    print(f"Time-taken plot and table successfully generated! Saved to {save_dir}\n")
