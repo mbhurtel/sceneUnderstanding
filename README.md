@@ -1,11 +1,7 @@
 ## <div align="center"> Battlefield Scene Understanding </div>
 
-<div align="center">
-  <p>
-      <img width="850" src="https://github.com/9characters/sceneUnderstanding/assets/qualitative_results.png"></a>
-  </p>
-</div>
-![manish_test](https://github.com/9characters/sceneUnderstanding/assets/qualitative_results.png)
+![](assets/qualitative_results.bmp)
+
 This is the official GitHub repository for the paper <b>"Efficient and Non-Redundant Objects Allocation Using Object-Aware and Depth-Aware Clustering for Battlefield Scenario"</b>. We have tried our best to keep the <b>random_state (or seed)</b> where required, for reproducibility of the results. The code is organized in four broad sections:
 - Environment and dependencies setup
 - Customized stratified 7-fold cross validation
