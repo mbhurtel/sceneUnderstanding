@@ -177,6 +177,9 @@ all_results
       ├── silhouette_scores.jpg
       ├── time_taken.jpg
 ```
+
+Note that the qualitative results presented in the paper are generated inside <b>all_results/inference_output</b>.
+
 #### <div align="left"> Credits </div>
 - The code for Battlefield Object Detector is based on
 [YOLOv5](https://github.com/ultralytics/yolov5)
