@@ -173,8 +173,8 @@ all_results
       ├── time_taken.jpg
 ```
 #### <div align="left"> Credits </div>
-- Most part of the codes for Battlefield Object Detector are depicted from:
-[YOLOv5 Official Repository](https://github.com/ultralytics/yolov5)
+- The code for Battlefield Object Detector is based on
+[YOLOv5](https://github.com/ultralytics/yolov5)
 
 - The depth estimation model is extracted from: [Monodepth2](https://github.com/nianticlabs/monodepth2)
 
