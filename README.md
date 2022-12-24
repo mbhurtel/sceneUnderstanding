@@ -99,7 +99,7 @@ Please note that the training requires a lot of time. Following table shows the 
 |YOLOv5x |       13.556     |
 
 #### Step 2: Generate training results
-Now we will use the results for all 5 YOLOv5 models i.e., YOLOv5n, YOLOv5s, YOLOv5m, YOLOv5l and YOLov5x and generate the training plots. To generate the training plots, you can simply run [training_plots_generator.py]().
+Now we will use the results for all 5 YOLOv5 models i.e., YOLOv5n, YOLOv5s, YOLOv5m, YOLOv5l and YOLov5x and generate the training plots. To generate the training plots, you can simply run [training_plots_generator.py](https://github.com/9characters/sceneUnderstanding/blob/main/training_plots_generator.py).
 ```
 python training_plots_generator.py
 ```
