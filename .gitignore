@@ -8,7 +8,8 @@
 *.JPG
 *.JPEG
 *.PNG
-*.BMP
+# *.bmp
+# *.BMP
 *.TIF
 *.TIFF
 *.HEIC
