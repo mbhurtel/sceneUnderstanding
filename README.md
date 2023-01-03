@@ -59,7 +59,7 @@ python train.py --img 416 --batch 64 --epochs 50 --data data/fold_5_data.yaml --
 python train.py --img 416 --batch 64 --epochs 50 --data data/fold_6_data.yaml --cfg ./models/battlefield_yolov5s.yaml --weights '' --name S7KCV_training_results/results_fold_6 --cache
 ```
 
-After completion of 7 independent training, the training results are stored in the a new <b>runs/train/S7KCV_training_results</b> directory. These results are used to generate the comparative plots.
+After completion of 7 independent training, the training results are stored in the a new <b>runs/train/S7KCV_training_results</b> directory. These results are used to generate the comparative plots, where one of the plots are put in the appendix of the paper.
 
 ##### Step 3: Generate comparative plots for 7 folds of data
 Here we generate the comparative bar chart and table to find out which fold of data is optimal. To generate the results, you should simply run [generate_s7kcv_results.py](https://github.com/9characters/sceneUnderstanding/blob/main/generate_s7kcv_results.py) script.
