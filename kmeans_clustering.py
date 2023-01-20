@@ -34,7 +34,7 @@ def create_clusters(k, data, image_id, x_dim, save_dir):
     cluster_time_1 = time_sync()
 
     # Running the KMeans module using the given parameters
-    km = KMeans(n_clusters=k, init='k-means++', n_init=10, max_iter=20, tol = 1e-04, random_state = 9)
+    km = KMeans(n_clusters=k, init='k-means++', n_init=5, max_iter=20, tol = 1e-04, random_state = 9)
     y_km = km.fit_predict(data)
     cluster_time_2 = time_sync()
     clustering_time = cluster_time_2 - cluster_time_1

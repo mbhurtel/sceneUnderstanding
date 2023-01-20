@@ -37,7 +37,7 @@ def generate_inertia_plot(cluster_features_csvs, save_dir):
                 k = len(data)
             
             # Here, we perform the Kmeans clustering using the given parameters
-            km = KMeans(n_clusters=k, init='k-means++', n_init=10, max_iter=20, tol = 1e-04, random_state = 9)
+            km = KMeans(n_clusters=k, init='k-means++', n_init=5, max_iter=20, tol = 1e-04, random_state = 9)
             
             # Generating the clusters
             y_km = km.fit_predict(data)
@@ -57,8 +57,10 @@ def generate_inertia_plot(cluster_features_csvs, save_dir):
         
         # PLotting the k-values and respective inertia
         plt.plot(range(1, 7), inertia, marker="o", c = color, linewidth=2, markersize=3)
-        plt.xlabel("K")
-        plt.ylabel("Inertia")
+        plt.xticks(fontsize=14)
+        plt.yticks(fontsize=14)
+        plt.xlabel("K", fontsize=14)
+        plt.ylabel("Inertia", fontsize=14)
 
     plt.grid()
     plt.savefig(f"{save_dir}/inertia_plot.jpg", dpi=300, bbox_inches="tight")
@@ -82,8 +84,10 @@ def plot_silhouette_scores(data_stats, save_dir):
     
     # Plotting the chart for 100 images with their respective silhouette scores
     plt.plot(image_num, data_stats["silhouette_score"], c = "maroon", marker = 'o')
-    plt.xlabel("Images")
-    plt.ylabel("Silhouette Score")
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
+    plt.xlabel("Images", fontsize=14)
+    plt.ylabel("Silhouette Score", fontsize=14)
     
     # Fixing the y-limit since the silhouette score ranges from -1 to +1
     plt.ylim(-1, 1)
@@ -120,8 +124,10 @@ def generate_time_data(data_stats, save_dir):
     # Adjusting the x and y limits
     plt.ylim(0, max(data_stats["total_time"]) + (0.2 * max(data_stats["total_time"])))
     plt.xlim(0, len(data_stats) - 1)
-    plt.xlabel("Images")
-    plt.ylabel("Time Taken by Each Alogithm (s)")
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
+    plt.xlabel("Images", fontsize=14)
+    plt.ylabel("Time Taken (s)", fontsize=14)
 
     plt.legend(loc='upper left')
     plt.grid()
