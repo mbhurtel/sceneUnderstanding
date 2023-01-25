@@ -55,5 +55,5 @@ for i in range(7):
 # Finally storing the comparative table as the csv file in S7FCV_results directory
 folds_ap_data.to_csv(f"{save_dir}/folds_AP_data.csv", index=True)
 
-print(f"Success! S7FCV bar plot saved at {save_dir}/folds_AP_data.csv")
+print(f"Success! S7FCV table comparison saved at {save_dir}/folds_AP_data.csv")
 #######################################################################################################################
