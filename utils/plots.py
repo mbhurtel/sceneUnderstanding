@@ -1,8 +1,3 @@
-# YOLOv5 🚀 by Ultralytics, GPL-3.0 license
-"""
-Plotting utils
-"""
-
 import math
 import os
 from copy import copy

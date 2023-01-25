@@ -1,8 +1,3 @@
-# YOLOv5 🚀 by Ultralytics, GPL-3.0 license
-"""
-AutoAnchor utils
-"""
-
 import random
 
 import numpy as np
