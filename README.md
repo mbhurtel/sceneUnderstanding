@@ -2,7 +2,7 @@
 
 ![](assets/qualitative_results.bmp)
 
-This is the official GitHub repository for the paper <b>"Toward Scene Understanding with Depth and Object-Aware Clustering in Contested Environment"</b>. We have tried our best to keep the <b>random_state (or seed)</b> where required, for reproducibility of the results. The code is organized in four broad sections:
+This is the official GitHub repository for the paper <b>"[Toward Scene Understanding with Depth and Object-Aware Clustering in Contested Environment](https://ieeexplore.ieee.org/abstract/document/10459876/)"</b>. We have tried our best to keep the <b>random_state (or seed)</b> where required, for reproducibility of the results. The code is organized in four broad sections:
 - Environment and dependencies setup
 - Customized stratified 7-fold cross validation
 - ODM Training using COBA
