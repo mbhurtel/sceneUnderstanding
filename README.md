@@ -1,10 +1,12 @@
 ## <div align="center"> Battlefield Scene Understanding </div>
 
+#### <div align="center"> [PROJECT WEBSITE](https://coeaiml.gitlab.io/coba/) &nbsp;&nbsp;&nbsp; [DATASET](https://www.kaggle.com/datasets/coeaimlhu/common-objects-in-battlefield-coba/data?select=COBA) &nbsp;&nbsp;&nbsp; [TRAINED WEIGHTS](https://www.kaggle.com/datasets/coeaimlhu/common-objects-in-battlefield-coba/data?select=battlefield_object_detector.pt) </div>
+
 ![](assets/qualitative_results.bmp)
 
 This is the official GitHub repository for the paper <b>"[Toward Scene Understanding with Depth and Object-Aware Clustering in Contested Environment](https://ieeexplore.ieee.org/abstract/document/10459876/)"</b>. We have tried our best to keep the <b>random_state (or seed)</b> where required, for reproducibility of the results. The code is organized in four broad sections:
 - Environment and dependencies setup
-- Customized stratified 7-fold cross validation
+- Customized stratified 7-fold cross-validation
 - ODM Training using COBA
 - Inference and Experiment using ODM + DEM + KMC
 
@@ -146,8 +148,8 @@ all_results
 ### 4. Inference and Experiment using ODM + DEM + KMC
 #### Step 1: Download the necessary models and data
 
-- Download our Battlefield Object Detector trained weights (battlefield_object_detector.pt) from <a href=#>here</a> and store it in [Weights](https://github.com/9characters/research3/tree/main/weights) directory.
-- Download the test_images from <a href=#>here</a> and place the folder into the working directory
+- Download our Battlefield Object Detector trained weights (battlefield_object_detector.pt) from <a href="https://www.kaggle.com/datasets/coeaimlhu/common-objects-in-battlefield-coba/data?select=battlefield_object_detector.pt"> here</a> and store it in [Weights](https://github.com/9characters/research3/tree/main/weights) directory.
+- Download your desired test images and place the folder into the working directory
 
 Note that the pretrained monodepth2 model and associated architectures are already uploaded in the <b>depth_models/stereo</b> and <b>architectures</b> directories respectively.
 
